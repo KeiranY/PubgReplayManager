@@ -22,5 +22,29 @@ namespace PubgReplayManager.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ReplaysFolder {
+            get {
+                return ((string)(this["ReplaysFolder"]));
+            }
+            set {
+                this["ReplaysFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BackupsFolder {
+            get {
+                return ((string)(this["BackupsFolder"]));
+            }
+            set {
+                this["BackupsFolder"] = value;
+            }
+        }
     }
 }

@@ -8,22 +8,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PubgReplayManager.Properties;
 
 namespace PubgReplayManager
 {
     public partial class Form1 : Form
     {
-        private static string ReplaysFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\TslGame\\Saved\\Demos\\";
-        private static string BackupsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\PubgReplayManager\\";
         private const string ReplayInfoFile = @"\\PUBG.replayinfo";
 
         public Form1()
         {
             InitializeComponent();
+            if (string.IsNullOrEmpty(Properties.Settings.Default.ReplaysFolder))
+            {
+                Settings.Default.ReplaysFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\TslGame\\Saved\\Demos\\";
+            }
+            if (string.IsNullOrEmpty(Properties.Settings.Default.BackupsFolder))
+            {
+                Settings.Default.BackupsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\PubgReplayManager\\";
+            }
+            //
+
             // Create the backup folder if it doesn't exist
-            Directory.CreateDirectory(BackupsFolder);
+            Directory.CreateDirectory(Settings.Default.BackupsFolder);
             // Check for the existence of the ReplaysFolder
-            if (!Directory.Exists(ReplaysFolder))
+            if (!Directory.Exists(Settings.Default.ReplaysFolder))
             {
                 // If ReplaysFolder does not exist, have the user search for a new one, or close
                 if (MessageBox.Show(
@@ -33,7 +42,7 @@ namespace PubgReplayManager
                     FolderBrowserDialog replayBrowser = new FolderBrowserDialog();
                     if (replayBrowser.ShowDialog() == DialogResult.OK)
                     {
-                        ReplaysFolder = replayBrowser.SelectedPath;
+                        Settings.Default.ReplaysFolder = replayBrowser.SelectedPath;
                     } else Close();
                 } else Close();
             }
@@ -91,8 +100,8 @@ namespace PubgReplayManager
             foreach (DataGridViewRow row in dataGridView1.SelectedRows)
             {
                 string name = row.Cells["dir"].Value.ToString();
-                string source = ReplaysFolder + name;
-                string dest = BackupsFolder + name;
+                string source = Settings.Default.ReplaysFolder + name;
+                string dest = Settings.Default.BackupsFolder + name;
                 if (Directory.Exists(dest))
                 {
                     MessageBox.Show(
@@ -122,8 +131,8 @@ namespace PubgReplayManager
             foreach (DataGridViewRow row in dataGridView2.SelectedRows)
             {
                 string name = row.Cells["dir"].Value.ToString();
-                string dest = ReplaysFolder + name;
-                string source = BackupsFolder + name;
+                string dest = Settings.Default.ReplaysFolder + name;
+                string source = Settings.Default.BackupsFolder + name;
                 if (Directory.Exists(dest))
                 {
                     MessageBox.Show(
@@ -156,7 +165,7 @@ namespace PubgReplayManager
             if (grid.Columns[e.ColumnIndex].HeaderText == "Locked")
             {
                 var dir = grid.Rows[e.RowIndex].Cells["dir"].Value;
-                var file = (grid.Name == "dataGridView1" ? ReplaysFolder : BackupsFolder) + dir + ReplayInfoFile;
+                var file = (grid.Name == "dataGridView1" ? Settings.Default.ReplaysFolder : Settings.Default.BackupsFolder) + dir + ReplayInfoFile;
                 string text = File.ReadAllText(file);
                 if (text.Contains(keepTrue))
                     File.WriteAllText(file, text.Replace(keepTrue, keepFalse));
@@ -170,7 +179,7 @@ namespace PubgReplayManager
             Replay.LoadedReplays.Clear();
             Replay.BackupReplays.Clear();
             // Enumerate Replays
-            foreach (var replay in Directory.GetDirectories(ReplaysFolder))
+            foreach (var replay in Directory.GetDirectories(Settings.Default.ReplaysFolder))
             {
                 //Check for the replay info file to make sure this is a real replay folder
                 if (File.Exists(replay + ReplayInfoFile))
@@ -179,7 +188,7 @@ namespace PubgReplayManager
                 }
             }
             // Enumerate Backups
-            foreach (var replay in Directory.GetDirectories(BackupsFolder))
+            foreach (var replay in Directory.GetDirectories(Settings.Default.BackupsFolder))
             {
                 //Check for the replay info file to make sure this is a real replay folder
                 if (File.Exists(replay + ReplayInfoFile))
