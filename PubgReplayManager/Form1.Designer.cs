@@ -35,6 +35,8 @@
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
             this.label2 = new System.Windows.Forms.Label();
             this.RefreshButton = new System.Windows.Forms.Button();
+            this.Export = new System.Windows.Forms.Button();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.SuspendLayout();
@@ -115,11 +117,22 @@
             this.RefreshButton.Text = "Refresh";
             this.RefreshButton.UseVisualStyleBackColor = true;
             // 
+            // Export
+            // 
+            this.Export.Location = new System.Drawing.Point(371, 351);
+            this.Export.Name = "Export";
+            this.Export.Size = new System.Drawing.Size(75, 23);
+            this.Export.TabIndex = 7;
+            this.Export.Text = "Export";
+            this.Export.UseVisualStyleBackColor = true;
+            this.Export.Click += new System.EventHandler(this.Export_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(834, 509);
+            this.Controls.Add(this.Export);
             this.Controls.Add(this.RefreshButton);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dataGridView2);
@@ -146,6 +159,8 @@
         private System.Windows.Forms.DataGridView dataGridView2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button RefreshButton;
+        private System.Windows.Forms.Button Export;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }
 
