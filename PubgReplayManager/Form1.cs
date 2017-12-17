@@ -19,6 +19,7 @@ namespace PubgReplayManager
         public Form1()
         {
             InitializeComponent();
+            // On first open, set these settings to their defaults
             if (string.IsNullOrEmpty(Properties.Settings.Default.ReplaysFolder))
             {
                 Settings.Default.ReplaysFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\TslGame\\Saved\\Demos\\";
@@ -27,8 +28,6 @@ namespace PubgReplayManager
             {
                 Settings.Default.BackupsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\PubgReplayManager\\";
             }
-            //
-
             // Create the backup folder if it doesn't exist
             Directory.CreateDirectory(Settings.Default.BackupsFolder);
             // Check for the existence of the ReplaysFolder
@@ -203,6 +202,12 @@ namespace PubgReplayManager
             // Display replay Count
             label1.Text = @"Replays: " + Replay.LoadedReplays.Count + @"/20";
             label2.Text = @"Backups: " + Replay.BackupReplays.Count;
+        }
+
+        // When the program is edited save our settings
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Settings.Default.Save();
         }
     }
 }
