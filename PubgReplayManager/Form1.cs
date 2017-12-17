@@ -7,7 +7,6 @@
     using System.Linq;
     using System.Threading;
     using System.Windows.Forms;
-    using Microsoft.VisualBasic.Devices;
     using Properties;
 
     public partial class Form1 : Form
@@ -241,40 +240,62 @@
             // The name of the file we'll be exporting to
             string zipFileName = saveFileDialog1.FileName;
 
-            // Make a temporary folder that contains replays for export
-            string folderName = Path.Combine(Path.GetTempPath(), "PubgReplayManager");
-
-            // Remove and recreate the folder to ensure it being completely empty
-            Directory.Delete(folderName, true);
-            Directory.CreateDirectory(folderName);
-
-            // Create a VB object to utilize VB APIs
-            var computer = new Computer();
-
-            // Run the archiving in a seperate non-blocking thread
+            // Run the archiving in a seperate non-blocking thread. TODO: Could this be shaven down?
             new Thread(() =>
                        {
-                           // Copy each selected replays to the temp folder
-                           foreach (string replay in selected.Select(r => r.dir))
+                           // Create a MemoryStream that holds an in-memory zip archive
+                           using (var memoryStream = new MemoryStream())
                            {
-                               string source = Path.Combine(Settings.Default.BackupsFolder, replay);
-                               string destination = Path.Combine(folderName, replay);
-
-                               if (!Directory.Exists(destination))
+                               // Create a ZipArchive that writes to the MemoryStream
+                               using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
                                {
-                                   // Really, really hacky. Sorry! Using a VB API instead of rolling my own
-                                   computer.FileSystem.CopyDirectory(source, destination);
+                                   // Get the name of all the replays that should be saved
+                                   foreach (string replay in selected.Select(r => r.dir))
+                                   {
+                                       // Get the full path of the replay
+                                       string source = Path.Combine(Settings.Default.BackupsFolder, replay);
+
+                                       // Get all the files in all subdirectories
+                                       string[] allFiles = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
+
+                                       // Loop through each file contained in each replay
+                                       foreach (string file in allFiles)
+                                       {
+                                           // Create an entry in the archive for the file. The archive uses paths relative to the root, so we remove everything from the path that is higher or equal to the root
+                                           ZipArchiveEntry entry = archive.CreateEntry(file.Remove(0, Settings.Default.BackupsFolder.Length));
+
+                                           // Open the stream associated with the new entry
+                                           using (Stream entryStream = entry.Open())
+                                           {
+                                               // Create a StreamWriter to easily write to the stream
+                                               using (var streamWriter = new StreamWriter(entryStream))
+                                               {
+                                                   // Open the file (using the full path)
+                                                   using (FileStream fileStream = File.OpenRead(file))
+                                                   {
+                                                       // Use a StreamReader to make reading easier
+                                                       using (var streamReader = new StreamReader(fileStream))
+                                                       {
+                                                           // Write the whole FileStream into the zip stream
+                                                           streamWriter.Write(streamReader.ReadToEnd());
+                                                       }
+                                                   }
+                                               }
+                                           }
+                                       }
+                                   }
+                               }
+
+                               // Open the output zip file
+                               using (var fileStream = new FileStream(zipFileName, FileMode.Create))
+                               {
+                                   // Revert to the beginning of the zip stream
+                                   memoryStream.Seek(0, SeekOrigin.Begin);
+
+                                   // Copy the zip archive to the file on disk
+                                   memoryStream.CopyTo(fileStream);
                                }
                            }
-
-                           // Replace the file if it already exists
-                           if (File.Exists(zipFileName))
-                           {
-                               File.Delete(zipFileName);
-                           }
-
-                           // Create zip file from the temp folder
-                           ZipFile.CreateFromDirectory(folderName, zipFileName);
                        }).Start();
         }
     }
