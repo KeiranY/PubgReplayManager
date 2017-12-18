@@ -36,7 +36,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.RefreshButton = new System.Windows.Forms.Button();
             this.Export = new System.Windows.Forms.Button();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.exportFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.import = new System.Windows.Forms.Button();
+            this.importFileDialog = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.SuspendLayout();
@@ -119,7 +121,7 @@
             // 
             // Export
             // 
-            this.Export.Location = new System.Drawing.Point(371, 351);
+            this.Export.Location = new System.Drawing.Point(371, 377);
             this.Export.Name = "Export";
             this.Export.Size = new System.Drawing.Size(75, 23);
             this.Export.TabIndex = 7;
@@ -127,11 +129,36 @@
             this.Export.UseVisualStyleBackColor = true;
             this.Export.Click += new System.EventHandler(this.Export_Click);
             // 
+            // exportFileDialog
+            // 
+            this.exportFileDialog.CheckFileExists = true;
+            this.exportFileDialog.DefaultExt = "zip";
+            this.exportFileDialog.Filter = "Zip File (*.zip)|*.zip";
+            this.exportFileDialog.OverwritePrompt = false;
+            // 
+            // import
+            // 
+            this.import.Location = new System.Drawing.Point(371, 348);
+            this.import.Name = "import";
+            this.import.Size = new System.Drawing.Size(75, 23);
+            this.import.TabIndex = 8;
+            this.import.Text = "Import";
+            this.import.UseVisualStyleBackColor = true;
+            this.import.Click += new System.EventHandler(this.Import_Click);
+            // 
+            // importFileDialog
+            // 
+            this.importFileDialog.DefaultExt = "zip";
+            this.importFileDialog.FileName = "importFileDialog";
+            this.importFileDialog.Filter = "Zip File (*.zip)|*.zip";
+            // 
             // Form1
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(834, 509);
+            this.Controls.Add(this.import);
             this.Controls.Add(this.Export);
             this.Controls.Add(this.RefreshButton);
             this.Controls.Add(this.label2);
@@ -160,7 +187,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button RefreshButton;
         private System.Windows.Forms.Button Export;
-        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.SaveFileDialog exportFileDialog;
+        private System.Windows.Forms.Button import;
+        private System.Windows.Forms.OpenFileDialog importFileDialog;
     }
 }
 

@@ -55,6 +55,9 @@
             LoadReplays();
             RefreshButton.Click += (sender, args) => LoadReplays();
 
+            DragEnter += OnDragEnter;
+            DragDrop += OnDragDrop;
+
             // Add Replays to DataTable
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.DataSource = Replay.LoadedReplays;
@@ -99,6 +102,27 @@
             dataGridView2.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             RefreshDisplays();
+        }
+
+        private static void OnDragEnter(object o, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void OnDragDrop(object o, DragEventArgs e)
+        {
+            var files = (string[]) e.Data.GetData(DataFormats.FileDrop);
+            foreach (string file in files)
+            {
+                var info = new FileInfo(file);
+                if (info.Extension == ".zip")
+                {
+                    Import(file);
+                }
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -222,25 +246,102 @@
             Settings.Default.Save();
         }
 
+        private void Import_Click(object sender, EventArgs e)
+        {
+            DialogResult result = importFileDialog.ShowDialog();
+
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+
+            Import(importFileDialog.FileName);
+        }
+
+        /// <summary>
+        ///     Import the replays contained in the specified zip archive.
+        /// </summary>
+        /// <param name="zipPath">The path to a zip archive containing PUBG replays</param>
+        private void Import(string zipPath)
+        {
+            // The FileStream containing the zip file
+            using (FileStream zipStream = File.OpenRead(zipPath))
+            {
+                // Read a zip archive with the zip stream
+                using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Read))
+                {
+                    // A HashSet containing names of all playlists in the archive
+                    var replays = new HashSet<string>();
+                    
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        // Get the replay name of the entry
+                        replays.Add(entry.FullName.Split(new[] {"\\"}, StringSplitOptions.None)[0]);
+                    }
+
+                    // Don't load a replay that we already have
+                    var allLoadedReplays = new List<Replay>();
+                    allLoadedReplays.AddRange(Replay.LoadedReplays);
+                    allLoadedReplays.AddRange(Replay.BackupReplays);
+
+                    // Only process the replays that aren't already saved
+                    List<string> newReplays = replays.Except(allLoadedReplays.Select(r => r.dir)).ToList();
+
+                    // Go through each entry
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        // Get the replay name of the entry
+                        string name = entry.FullName.Split(new[] {"\\"}, StringSplitOptions.None)[0];
+
+                        // Disregard the replay if it's already loaded
+                        if (!newReplays.Contains(name))
+                        {
+                            continue;
+                        }
+
+                        // Open the stream of the entry
+                        using (Stream entryStream = entry.Open())
+                        {
+                            // Get the path of the entry in the backup folder
+                            string entryPath = Path.Combine(Settings.Default.BackupsFolder, entry.FullName);
+
+                            // Create the folders neccessary if they don't exist
+                            if (!Directory.Exists(entryPath))
+                            {
+                                Directory.CreateDirectory(Path.GetDirectoryName(entryPath) ?? throw new InvalidOperationException()); // Exception should be impossible
+                            }
+
+                            // Open the file and write the replay file
+                            using (FileStream entryFileStream = File.OpenWrite(entryPath))
+                            {
+                                entryFileStream.SetLength(0);
+                                entryStream.CopyTo(entryFileStream);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Reload the new replays
+            LoadReplays();
+        }
+
         private void Export_Click(object sender, EventArgs e)
         {
             // Export all backed up replays. TODO: Support both loaded and backed up replays
             IEnumerable<Replay> selected = dataGridView2.SelectedRows.Cast<DataGridViewRow>().Select(row => row.Cells["dir"].Value.ToString()).Select(name => Replay.BackupReplays.First(x => x.dir == name)).ToList();
 
-            // Ensure that only zip files can be chosen
-            saveFileDialog1.Filter = @"Zip File (*.zip)|*.zip";
-
             // Only proceed if a file has been successfully selected
-            DialogResult result = saveFileDialog1.ShowDialog();
+            DialogResult result = exportFileDialog.ShowDialog();
             if (result != DialogResult.OK)
             {
                 return;
             }
 
             // The name of the file we'll be exporting to
-            string zipFileName = saveFileDialog1.FileName;
+            string zipFileName = exportFileDialog.FileName;
 
-            // Run the archiving in a seperate non-blocking thread. TODO: Could this be shaven down?
+            // Run the archiving in a seperate non-blocking thread.
             new Thread(() =>
                        {
                            // Create a MemoryStream that holds an in-memory zip archive
@@ -261,27 +362,8 @@
                                        // Loop through each file contained in each replay
                                        foreach (string file in allFiles)
                                        {
-                                           // Create an entry in the archive for the file. The archive uses paths relative to the root, so we remove everything from the path that is higher or equal to the root
-                                           ZipArchiveEntry entry = archive.CreateEntry(file.Remove(0, Settings.Default.BackupsFolder.Length));
-
-                                           // Open the stream associated with the new entry
-                                           using (Stream entryStream = entry.Open())
-                                           {
-                                               // Create a StreamWriter to easily write to the stream
-                                               using (var streamWriter = new StreamWriter(entryStream))
-                                               {
-                                                   // Open the file (using the full path)
-                                                   using (FileStream fileStream = File.OpenRead(file))
-                                                   {
-                                                       // Use a StreamReader to make reading easier
-                                                       using (var streamReader = new StreamReader(fileStream))
-                                                       {
-                                                           // Write the whole FileStream into the zip stream
-                                                           streamWriter.Write(streamReader.ReadToEnd());
-                                                       }
-                                                   }
-                                               }
-                                           }
+                                           // Create an entry in the archive for the file. The names are relative to the root, so we remove everything from the path that is higher or equal to the root
+                                           archive.CreateEntryFromFile(file, file.Remove(0, Settings.Default.BackupsFolder.Length));
                                        }
                                    }
                                }
