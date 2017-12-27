@@ -35,7 +35,7 @@
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
             this.label2 = new System.Windows.Forms.Label();
             this.RefreshButton = new System.Windows.Forms.Button();
-            this.Export = new System.Windows.Forms.Button();
+            this.Export_Button = new System.Windows.Forms.Button();
             this.exportFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.import = new System.Windows.Forms.Button();
             this.importFileDialog = new System.Windows.Forms.OpenFileDialog();
@@ -119,15 +119,15 @@
             this.RefreshButton.Text = "Refresh";
             this.RefreshButton.UseVisualStyleBackColor = true;
             // 
-            // Export
+            // Export_Button
             // 
-            this.Export.Location = new System.Drawing.Point(371, 377);
-            this.Export.Name = "Export";
-            this.Export.Size = new System.Drawing.Size(75, 23);
-            this.Export.TabIndex = 7;
-            this.Export.Text = "Export";
-            this.Export.UseVisualStyleBackColor = true;
-            this.Export.Click += new System.EventHandler(this.Export_Click);
+            this.Export_Button.Location = new System.Drawing.Point(371, 377);
+            this.Export_Button.Name = "Export_Button";
+            this.Export_Button.Size = new System.Drawing.Size(75, 23);
+            this.Export_Button.TabIndex = 7;
+            this.Export_Button.Text = "Export";
+            this.Export_Button.UseVisualStyleBackColor = true;
+            this.Export_Button.Click += new System.EventHandler(this.Export_Click);
             // 
             // exportFileDialog
             // 
@@ -159,7 +159,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(834, 509);
             this.Controls.Add(this.import);
-            this.Controls.Add(this.Export);
+            this.Controls.Add(this.Export_Button);
             this.Controls.Add(this.RefreshButton);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dataGridView2);
@@ -186,7 +186,7 @@
         private System.Windows.Forms.DataGridView dataGridView2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button RefreshButton;
-        private System.Windows.Forms.Button Export;
+        private System.Windows.Forms.Button Export_Button;
         private System.Windows.Forms.SaveFileDialog exportFileDialog;
         private System.Windows.Forms.Button import;
         private System.Windows.Forms.OpenFileDialog importFileDialog;
