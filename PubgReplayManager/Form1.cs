@@ -315,7 +315,7 @@
                 // Read a zip archive with the zip stream
                 using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Read))
                 {
-                    // A HashSet containing names of all playlists in the archive
+                    // A HashSet containing names of all replays in the archive
                     var replays = new HashSet<string>();
 
                     foreach (ZipArchiveEntry entry in archive.Entries)
@@ -427,4 +427,3 @@
         }
     }
 }
-cl
