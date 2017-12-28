@@ -131,7 +131,7 @@
             // 
             // exportFileDialog
             // 
-            this.exportFileDialog.CheckFileExists = true;
+            this.exportFileDialog.CheckFileExists = false;
             this.exportFileDialog.DefaultExt = "zip";
             this.exportFileDialog.Filter = "Zip File (*.zip)|*.zip";
             this.exportFileDialog.OverwritePrompt = false;

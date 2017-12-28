@@ -37,8 +37,9 @@ namespace PubgReplayManager
 
         public Replay(string directory)
         {
-            dir = directory.Split('\\').Last();
-            var infoFile = File.ReadAllText(directory + @"\\PUBG.replayinfo", Encoding.UTF8);
+	    // Name of the folder
+	    dir = new DirectoryInfo(directory).Name;
+            var infoFile = File.ReadAllText(Path.Combine(directory, Form1.ReplayInfoFile), Encoding.UTF8);
             length    = TimeSpan.FromMilliseconds(double.Parse(infoFile.Split(new[] {"\"LengthInMS\": "}, StringSplitOptions.None)[1].Split(',')[0]));
             timestamp = DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(infoFile.Split(new[] { "\"Timestamp\":" }, StringSplitOptions.None)[1].Split(',')[0]));
             var _mode = infoFile.Split(new[] {"\"Mode\": "}, StringSplitOptions.None)[1].Split('"')[1];

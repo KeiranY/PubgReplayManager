@@ -11,7 +11,7 @@
 
     public partial class Form1 : Form
     {
-        private const string ReplayInfoFile = @"\\PUBG.replayinfo";
+        public const string ReplayInfoFile = @"PUBG.replayinfo";
 
         private static readonly string keepFalse = "\"bShouldKeep\": false";
         private static readonly string keepTrue = "\"bShouldKeep\": true";
@@ -23,14 +23,13 @@
             if (string.IsNullOrEmpty(Settings.Default.ReplaysFolder))
             {
                 Settings.Default.ReplaysFolder =
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
-                    "\\TslGame\\Saved\\Demos\\";
+		    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TslGame", "Saved", "Demos");
             }
 
             if (string.IsNullOrEmpty(Settings.Default.BackupsFolder))
             {
                 Settings.Default.BackupsFolder =
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\PubgReplayManager\\";
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PubgReplayManager");
             }
 
             // Create the backup folder if it doesn't exist
@@ -154,8 +153,8 @@
             foreach (DataGridViewRow row in dataGridView1.SelectedRows)
             {
                 string name = row.Cells["dir"].Value.ToString();
-                string source = Settings.Default.ReplaysFolder + name;
-                string dest = Settings.Default.BackupsFolder + name;
+                string source = Path.Combine(Settings.Default.ReplaysFolder, name);
+                string dest = Path.Combine(Settings.Default.BackupsFolder, name);
                 if (Directory.Exists(dest))
                 {
                     MessageBox.Show(@"The backup directory for this replay already exists, have you backed this up before?\nLocation: " +
@@ -192,8 +191,8 @@
             foreach (DataGridViewRow row in dataGridView2.SelectedRows)
             {
                 string name = row.Cells["dir"].Value.ToString();
-                string dest = Settings.Default.ReplaysFolder + name;
-                string source = Settings.Default.BackupsFolder + name;
+                string dest = Path.Combine(Settings.Default.ReplaysFolder, name);
+                string source = Path.Combine(Settings.Default.BackupsFolder, name);
                 if (Directory.Exists(dest))
                 {
                     MessageBox.Show(@"The restore directory for this replay already exists, have you restored this before?\nLocation: " +
@@ -214,7 +213,7 @@
                     catch (IOException)
                     {
                         MessageBox
-                            .Show(@"Unable to backup the file, if the problem persists try closing PUBG or running this program as Administrator.",
+                            .Show(@"Unable to restore the file, if the problem persists try closing PUBG or running this program as Administrator.",
                                   @"Unable to move",
                                   MessageBoxButtons.OK,
                                   MessageBoxIcon.Error);
@@ -237,9 +236,9 @@
             {
                 object dir = grid.Rows[e.RowIndex].Cells["dir"].Value;
                 string file =
-                    (grid.Name == "dataGridView1" ? Settings.Default.ReplaysFolder : Settings.Default.BackupsFolder) +
-                    dir +
-                    ReplayInfoFile;
+                    Path.Combine((grid.Name == "dataGridView1" ? Settings.Default.ReplaysFolder : Settings.Default.BackupsFolder),
+                    dir.ToString(),
+                    ReplayInfoFile);
                 string text = File.ReadAllText(file);
                 if (text.Contains(keepTrue))
                 {
@@ -260,8 +259,9 @@
             // Enumerate Replays
             foreach (string replay in Directory.GetDirectories(Settings.Default.ReplaysFolder))
             {
+		
                 //Check for the replay info file to make sure this is a real replay folder
-                if (File.Exists(replay + ReplayInfoFile))
+                if (File.Exists(Path.Combine(replay, ReplayInfoFile)))
                 {
                     Replay.LoadedReplays.Add(new Replay(replay));
                 }
@@ -271,7 +271,7 @@
             foreach (string replay in Directory.GetDirectories(Settings.Default.BackupsFolder))
             {
                 //Check for the replay info file to make sure this is a real replay folder
-                if (File.Exists(replay + ReplayInfoFile))
+                if (File.Exists(Path.Combine(replay, ReplayInfoFile)))
                 {
                     Replay.BackupReplays.Add(new Replay(replay));
                 }
@@ -303,7 +303,7 @@
             Import(importFileDialog.FileName);
         }
 
-        /// <summary>
+/// <summary>
         ///     Import the replays contained in the specified zip archive.
         /// </summary>
         /// <param name="zipPath">The path to a zip archive containing PUBG replays</param>
@@ -348,7 +348,7 @@
                         using (Stream entryStream = entry.Open())
                         {
                             // Get the path of the entry in the backup folder
-                            string entryPath = Path.Combine(Settings.Default.BackupsFolder, entry.FullName);
+                            string entryPath = Settings.Default.BackupsFolder + entry.FullName;
 
                             // Create the folders neccessary if they don't exist
                             if (!Directory.Exists(entryPath))
@@ -371,7 +371,8 @@
 
             // Reload the new replays
             LoadReplays();
-        }
+}
+
 
 
         private void Export(string destFile)
